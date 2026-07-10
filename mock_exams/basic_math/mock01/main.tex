@@ -1,0 +1,62 @@
+\documentclass[uplatex,dvipdfmx,11pt,a4paper]{jsarticle}
+\usepackage[margin=20mm,headsep=7mm,footskip=12mm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{newtxtext,newtxmath}
+\usepackage[haranoaji]{pxchfon}
+\usepackage[dvipdfmx]{graphicx,xcolor}
+\usepackage{tikz}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{tabularx,array,booktabs,multicol}
+\usepackage{lastpage}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{ascmac}
+
+\definecolor{Navy}{HTML}{17365D}
+\definecolor{Blue}{HTML}{2F5597}
+\definecolor{PaleBlue}{HTML}{EAF1F8}
+\definecolor{Ink}{HTML}{202733}
+\definecolor{SoftGray}{HTML}{F3F5F7}
+\definecolor{RuleGray}{HTML}{D7DCE2}
+\color{Ink}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 基礎数学 予想模試 2026}
+\fancyhead[R]{\small 電気通信大学大学院・基盤理工学専攻対策}
+\fancyfoot[C]{\small \thepage\ / \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.25em}
+\setlist[enumerate,1]{label=(\arabic*),leftmargin=2.5em,itemsep=0.7em}
+\setlist[enumerate,2]{label=(\alph*),leftmargin=2.5em,itemsep=0.5em}
+\renewcommand{\arraystretch}{1.25}
+
+\newtcolorbox{examinfo}[1][]{
+  enhanced, colback=PaleBlue, colframe=Navy, boxrule=0.8pt,
+  arc=1.5mm, left=3mm,right=3mm,top=2mm,bottom=2mm,#1}
+\newtcolorbox{pointbox}[1][]{
+  enhanced, colback=SoftGray, colframe=RuleGray, boxrule=0.5pt,
+  arc=1mm, left=3mm,right=3mm,top=1.5mm,bottom=1.5mm,#1}
+\newtcolorbox{solutionbox}[1][]{
+  enhanced, breakable, colback=white, colframe=Navy, boxrule=0.7pt,
+  arc=1mm, left=4mm,right=4mm,top=3mm,bottom=3mm,#1}
+\newcommand{\score}[1]{\hfill\textcolor{Navy}{\fbox{\rule{0pt}{2.5ex}\,#1点\,}}}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\blanklines}[1]{%
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \foreach \i in {0,...,#1}{\draw[RuleGray, line width=0.25pt] (0,-8*\i) -- (170,-8*\i);}
+\end{tikzpicture}}
+
+\begin{document}
+\input{mock_exams/basic_math/mock01/cover_instructions.tex}
+\input{mock_exams/basic_math/mock01/problems.tex}
+\input{mock_exams/basic_math/mock01/answer_sheets.tex}
+\input{mock_exams/basic_math/mock01/solutions.tex}
+\end{document}
