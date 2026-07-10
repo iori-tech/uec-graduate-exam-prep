@@ -1,0 +1,107 @@
+name: Build LaTeX PDFs
+
+on:
+  push:
+    paths:
+      - 'practice/**/*.tex'
+      - 'mock_exams/**/*.tex'
+      - '.github/workflows/build-pdf.yml'
+  pull_request:
+    paths:
+      - 'practice/**/*.tex'
+      - 'mock_exams/**/*.tex'
+      - '.github/workflows/build-pdf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Japanese LaTeX environment
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            texlive-lang-japanese \
+            texlive-latex-extra \
+            texlive-fonts-extra \
+            latexmk \
+            fonts-haranoaji
+
+      - name: Compile all LaTeX sources
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/pdfs build/logs build/work
+          status=0
+
+          while IFS= read -r -d '' texfile; do
+            relative="${texfile#./}"
+            stem="${relative%.tex}"
+            basename="$(basename "$stem")"
+            workdir="build/work/$(dirname "$stem")"
+            pdfdir="build/pdfs/$(dirname "$stem")"
+            logdir="build/logs/$(dirname "$stem")"
+            mkdir -p "$workdir" "$pdfdir" "$logdir"
+
+            echo "::group::Compiling $relative"
+            logfile="$logdir/${basename}.log"
+            : > "$logfile"
+
+            uplatex -interaction=nonstopmode -halt-on-error \
+              -output-directory="$workdir" "$texfile" 2>&1 | tee -a "$logfile"
+            first_status=${PIPESTATUS[0]}
+
+            if [ "$first_status" -eq 0 ]; then
+              uplatex -interaction=nonstopmode -halt-on-error \
+                -output-directory="$workdir" "$texfile" 2>&1 | tee -a "$logfile"
+              second_status=${PIPESTATUS[0]}
+            else
+              second_status=1
+            fi
+
+            if [ "$first_status" -eq 0 ] && [ "$second_status" -eq 0 ]; then
+              dvifile="$workdir/${basename}.dvi"
+              pdffile="$pdfdir/${basename}.pdf"
+              dvipdfmx -o "$pdffile" "$dvifile" 2>&1 | tee -a "$logfile"
+              pdf_status=${PIPESTATUS[0]}
+            else
+              pdf_status=1
+            fi
+
+            if [ "$first_status" -ne 0 ] || [ "$second_status" -ne 0 ] || [ "$pdf_status" -ne 0 ]; then
+              echo "Compilation failed: $relative" | tee -a "$logfile"
+              status=1
+            else
+              echo "Compilation succeeded: $relative" | tee -a "$logfile"
+            fi
+            echo "::endgroup::"
+          done < <(find practice mock_exams -type f -name 'main.tex' -print0 | sort -z)
+
+          exit "$status"
+
+      - name: Upload compiled PDFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-pdfs
+          path: build/pdfs/**/*.pdf
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload LaTeX build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: latex-build-logs
+          path: build/logs/**/*.log
+          if-no-files-found: warn
+          retention-days: 14
